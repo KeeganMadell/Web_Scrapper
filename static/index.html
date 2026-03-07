@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WebScraper</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+  --bg: #0c0c0c;
+  --surface: #131313;
+  --surface2: #1a1a1a;
+  --border: #252525;
+  --border2: #333;
+  --accent: #00FF00;
+  --accent2: #47d4ff;
+  --text: #efefef;
+  --muted: #5a5a5a;
+  --muted2: #888;
+  --danger: #ff4757;
+  --success: #2ed573;
+  --warn: #ffa502;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9998;
+}
+
+/* ── HEADER ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: rgba(12,12,12,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.logo em { color: var(--accent); font-style: normal; }
+.logo-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--border2);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+/* ── MAIN ── */
+main { max-width: 1020px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* ── INPUT ZONE ── */
+.zone-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: block;
+}
+.url-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.url-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.82rem;
+  padding: 13px 18px;
+  outline: none;
+  border-radius: 3px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.url-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232,255,71,0.07);
+}
+.url-input::placeholder { color: var(--muted); }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  padding: 13px 22px;
+  border-radius: 3px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: #0c0c0c; }
+.btn-primary:hover:not(:disabled) { background: #00FF00; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232,255,71,0.2); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted2); border: 1px solid var(--border2); }
+.btn-ghost:hover { color: var(--text); border-color: var(--muted2); }
+.btn-xs { font-size: 0.6rem; padding: 6px 12px; }
+
+/* ── TOGGLES ── */
+.toggle-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.toggle {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 7px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  user-select: none;
+  transition: all 0.15s;
+}
+.toggle.on { border-color: rgba(232,255,71,0.35); color: var(--accent); background: rgba(232,255,71,0.04); }
+.toggle .pip { width:6px; height:6px; border-radius:50%; background:var(--border2); transition:background 0.15s; flex-shrink:0; }
+.toggle.on .pip { background: var(--accent); box-shadow: 0 0 6px rgba(232,255,71,0.5); }
+
+/* ── PROGRESS ── */
+.progress-wrap { height: 2px; background: var(--border); border-radius: 2px; margin: 20px 0 0; overflow: hidden; display: none; }
+.progress-wrap.show { display: block; }
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  width: 0;
+  transition: width 0.3s ease;
+}
+.progress-bar.anim { animation: sweep 1.4s ease infinite; width: 35%; }
+@keyframes sweep { 0%{transform:translateX(-200%)} 100%{transform:translateX(400%)} }
+
+/* ── BANNER ── */
+.banner {
+  padding: 11px 16px;
+  border-radius: 3px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  margin-top: 16px;
+  display: none;
+}
+.banner.err { display:flex; background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.25); color:var(--danger); }
+.banner.ok  { display:flex; background:rgba(46,213,115,0.08); border:1px solid rgba(46,213,115,0.2); color:var(--success); }
+
+/* ── RESULTS ── */
+#results { margin-top: 40px; display: none; }
+
+.results-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+}
+.page-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--muted2);
+}
+.page-title strong { color: var(--text); }
+
+.export-btns { display:flex; gap:8px; }
+
+/* ── TABS ── */
+.tabs { display:flex; border-bottom:1px solid var(--border); margin-bottom: 24px; }
+.tab {
+  font-family:'Space Mono',monospace;
+  font-size:0.64rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding:10px 20px;
+  cursor:pointer;
+  color:var(--muted);
+  border-bottom:2px solid transparent;
+  position:relative; bottom:-1px;
+  transition:all 0.15s;
+}
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.badge {
+  font-size:0.55rem;
+  padding:1px 6px;
+  border-radius:20px;
+  margin-left:6px;
+  background:var(--border2);
+  color:var(--muted2);
+}
+.tab.active .badge { background:rgba(232,255,71,0.15); color:var(--accent); }
+
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* ── LINKS TABLE ── */
+.data-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+.data-table th {
+  font-family:'Space Mono',monospace;
+  font-size:0.58rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--muted);
+  text-align:left;
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+}
+.data-table td { padding:9px 14px; border-bottom:1px solid rgba(37,37,37,0.7); vertical-align:middle; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:hover td { background:rgba(255,255,255,0.015); }
+.cell-trunc { max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+.data-table a { color:var(--accent2); text-decoration:none; }
+.data-table a:hover { text-decoration:underline; }
+.pill {
+  font-family:'Space Mono',monospace;
+  font-size:0.56rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  padding:2px 8px;
+  border-radius:2px;
+  white-space:nowrap;
+}
+.pill-int  { background:rgba(46,213,115,0.1); color:var(--success); border:1px solid rgba(46,213,115,0.2); }
+.pill-ext  { background:rgba(71,212,255,0.08); color:var(--accent2); border:1px solid rgba(71,212,255,0.18); }
+.pill-other{ background:rgba(255,255,255,0.04); color:var(--muted2); border:1px solid var(--border2); }
+
+/* ── IMAGE GRID ── */
+.img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+.img-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:3px;
+  overflow:hidden;
+  transition:border-color 0.15s, transform 0.15s;
+}
+.img-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.img-card img { width:100%; height:110px; object-fit:cover; display:block; background:var(--surface2); }
+.img-card-meta { padding:8px 10px; }
+.img-alt { font-size:0.72rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.img-dims { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); }
+
+/* ── SCRAPED TABLES ── */
+.tbl-block { margin-bottom:24px; border:1px solid var(--border); border-radius:3px; overflow:hidden; }
+.tbl-label {
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+}
+.tbl-scroll { overflow-x:auto; }
+.scraped-tbl { width:100%; border-collapse:collapse; font-size:0.78rem; }
+.scraped-tbl th {
+  background:rgba(232,255,71,0.04);
+  color:var(--accent);
+  font-family:'Space Mono',monospace;
+  font-size:0.62rem;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  padding:8px 12px;
+  text-align:left;
+  white-space:nowrap;
+}
+.scraped-tbl td { padding:7px 12px; border-top:1px solid rgba(37,37,37,0.8); white-space:nowrap; }
+.scraped-tbl tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* ── META STRIP ── */
+.meta-strip {
+  display:flex;
+  gap:28px;
+  flex-wrap:wrap;
+  padding:14px 0;
+  border-top:1px solid var(--border);
+  margin-top:40px;
+}
+.meta-kv { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--muted); }
+.meta-kv span { color:var(--text); }
+
+/* ── EMPTY ── */
+.empty {
+  text-align:center;
+  padding:64px 24px;
+  color:var(--muted);
+}
+.empty-icon { font-size:2rem; margin-bottom:14px; opacity:0.25; }
+.empty h3 { font-family:'Space Mono',monospace; font-size:0.8rem; color:var(--muted2); margin-bottom:6px; }
+.empty p { font-size:0.78rem; }
+
+@media(max-width:600px){
+  header{padding:0 16px;}
+  main{padding:28px 14px 60px;}
+  .url-row{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Find<em>Stuff</em></div>
+  <div class="logo-badge">FastAPI · BS4</div>
+</header>
+
+<main>
+  <div style="margin-bottom:32px">
+    <span class="zone-label">Target URL</span>
+    <div class="url-row">
+      <input id="urlInput" class="url-input" type="url"
+        placeholder="https://example.com" autocomplete="off" spellcheck="false"/>
+      <button class="btn btn-primary" id="scrapeBtn" onclick="run()">Scrape</button>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle on" id="tog-links" onclick="tog('links')"><div class="pip"></div>Links</div>
+      <div class="toggle on" id="tog-images" onclick="tog('images')"><div class="pip"></div>Images</div>
+      <div class="toggle on" id="tog-tables" onclick="tog('tables')"><div class="pip"></div>Tables</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="prog"><div class="progress-bar anim" id="bar"></div></div>
+  <div class="banner" id="banner"></div>
+
+  <div id="results">
+    <div class="results-top">
+      <div class="page-title">Results for <strong id="rtitle"></strong></div>
+      <div class="export-btns">
+        <button class="btn btn-ghost btn-xs" onclick="dl('json')"> downlaod - JSON</button>
+        <button class="btn btn-ghost btn-xs" onclick="dl('csv')"> download - CSV</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" id="tab-links" onclick="switchTab('links')">Links<span class="badge" id="b-links">0</span></div>
+      <div class="tab" id="tab-images" onclick="switchTab('images')">Images<span class="badge" id="b-images">0</span></div>
+      <div class="tab" id="tab-tables" onclick="switchTab('tables')">Tables<span class="badge" id="b-tables">0</span></div>
+    </div>
+
+    <div class="panel active" id="panel-links"><div id="links-inner"></div></div>
+    <div class="panel" id="panel-images"><div id="images-inner"></div></div>
+    <div class="panel" id="panel-tables"><div id="tables-inner"></div></div>
+
+    <div class="meta-strip">
+      <div class="meta-kv">Status <span id="m-status">—</span></div>
+      <div class="meta-kv">Size <span id="m-size">—</span></div>
+      <div class="meta-kv">Time <span id="m-time">—</span></div>
+      <div class="meta-kv">Elapsed <span id="m-elapsed">—</span></div>
+    </div>
+  </div>
+
+  <div id="empty">
+    <div class="empty">
+      <div class="empty-icon">☹️</div>
+      <h3>Nothing scraped yet</h3>
+      <p>Enter a URL above and hit Scrape.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+  const state = { links:true, images:true, tables:true };
+  let lastData = null;
+  let lastUrl = '';
+
+  function tog(k) {
+    state[k] = !state[k];
+    document.getElementById('tog-'+k).classList.toggle('on', state[k]);
+  }
+
+  function switchTab(t) {
+    ['links','images','tables'].forEach(k => {
+      document.getElementById('tab-'+k).classList.toggle('active', k===t);
+      document.getElementById('panel-'+k).classList.toggle('active', k===t);
+    });
+  }
+
+  function banner(msg, type) {
+    const el = document.getElementById('banner');
+    el.textContent = msg;
+    el.className = 'banner ' + type;
+  }
+  function clearBanner() { document.getElementById('banner').className = 'banner'; }
+
+  function setLoading(on) {
+    document.getElementById('prog').classList.toggle('show', on);
+    document.getElementById('scrapeBtn').disabled = on;
+    document.getElementById('scrapeBtn').textContent = on ? 'Fetching…' : 'Scrape';
+  }
+
+  function h(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  async function run() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) { banner('Enter a URL first.', 'err'); return; }
+    clearBanner();
+    setLoading(true);
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('empty').style.display = 'none';
+    lastUrl = url;
+
+    try {
+      const res = await fetch('/scrape', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          url,
+          scrape_links: state.links,
+          scrape_images: state.images,
+          scrape_tables: state.tables
+        })
+      });
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try { const err = await res.json(); msg = err.detail || msg; } catch {}
+        throw new Error(msg);
+      }
+      const data = await res.json();
+      lastData = data;
+      render(data);
+    } catch(e) {
+      banner('✗ ' + e.message, 'err');
+      document.getElementById('empty').style.display = 'block';
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function render(d) {
+    document.getElementById('rtitle').textContent = d.title || d.url;
+    document.getElementById('b-links').textContent = d.links.length;
+    document.getElementById('b-images').textContent = d.images.length;
+    document.getElementById('b-tables').textContent = d.tables.length;
+    document.getElementById('m-status').textContent = d.status_code;
+    document.getElementById('m-size').textContent = d.content_size_kb + ' KB';
+    document.getElementById('m-time').textContent = new Date().toLocaleTimeString();
+    document.getElementById('m-elapsed').textContent = d.elapsed_ms + ' ms';
+
+    document.getElementById('links-inner').innerHTML = renderLinks(d.links);
+    document.getElementById('images-inner').innerHTML = renderImages(d.images);
+    document.getElementById('tables-inner').innerHTML = renderTables(d.tables);
+
+    document.getElementById('results').style.display = 'block';
+    switchTab('links');
+
+    const total = d.links.length + d.images.length + d.tables.length;
+    banner(`✓ ${total} items extracted — ${d.elapsed_ms}ms`, 'ok');
+  }
+
+  function renderLinks(links) {
+    if (!links.length) return empty('🔗','No links found');
+    const rows = links.map(l => `<tr>
+      <td><span class="pill pill-${l.type==='internal'?'int':l.type==='external'?'ext':'other'}">${h(l.type)}</span></td>
+      <td><span class="cell-trunc" title="${h(l.text)}">${h(l.text)}</span></td>
+      <td><a href="${h(l.href)}" target="_blank" rel="noopener"><span class="cell-trunc">${h(l.href)}</span></a></td>
+    </tr>`).join('');
+    return `<table class="data-table"><thead><tr><th>Type</th><th>Text</th><th>URL</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function renderImages(imgs) {
+    if (!imgs.length) return empty('🖼','No images found');
+    return `<div class="img-grid">${imgs.map(i=>`
+      <div class="img-card">
+        <img src="${h(i.src)}" alt="${h(i.alt)}" loading="lazy" onerror="this.style.opacity=0"/>
+        <div class="img-card-meta">
+          <div class="img-alt">${h(i.alt||'(no alt)')}</div>
+          ${i.width&&i.height?`<div class="img-dims">${h(i.width)}×${h(i.height)}</div>`:''}
+        </div>
+      </div>`).join('')}</div>`;
+  }
+
+  function renderTables(tables) {
+    if (!tables.length) return empty('📊','No tables found');
+    return tables.map(t => {
+      const thead = t.headers.length ? `<tr>${t.headers.map(hd=>`<th>${h(hd)}</th>`).join('')}</tr>` : '';
+      const tbody = t.rows.map(r=>`<tr>${r.map(c=>`<td>${h(c)}</td>`).join('')}</tr>`).join('');
+      return `<div class="tbl-block">
+        <div class="tbl-label">Table #${t.index} — ${t.rows.length} rows</div>
+        <div class="tbl-scroll"><table class="scraped-tbl"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>
+      </div>`;
+    }).join('');
+  }
+
+  function empty(icon, msg) {
+    return `<div class="empty"><div class="empty-icon">${icon}</div><h3>${msg}</h3></div>`;
+  }
+
+  async function dl(fmt) {
+    if (!lastUrl) return;
+    const res = await fetch('/export/'+fmt, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url:lastUrl, scrape_links:state.links, scrape_images:state.images, scrape_tables:state.tables })
+    });
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `scrape-export.${fmt}`;
+    a.click();
+  }
+
+  document.getElementById('urlInput').addEventListener('keydown', e => { if(e.key==='Enter') run(); });
+</script>
+</body>
+</html>

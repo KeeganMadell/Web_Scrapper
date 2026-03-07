@@ -1,2 +1,48 @@
-# Web_Scrapper
-A program that scraps data from a website
+# SCRPR — Web Scraper
+
+FastAPI + BeautifulSoup4 scraper with a clean browser UI.
+
+## Setup
+
+```bash
+# 1. Clone / unzip the project
+cd scraper
+
+# 2. Create a virtual environment
+python3 -m venv venv
+source venv/bin/activate        # Linux/Mac
+# venv\Scripts\activate         # Windows
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run the server
+uvicorn main:app --reload --port 8000
+```
+
+Open **http://localhost:8000** in your browser.
+
+## Features
+- Scrapes **links** (internal/external tagged), **images** (lazy-loaded grid), **HTML tables**
+- Toggle each data type on/off before scraping
+- Export results as **JSON** or **CSV**
+- Shows status code, page size, and response time
+- Proper User-Agent headers to reduce bot blocking
+
+## API Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Frontend UI |
+| POST | `/scrape` | Scrape a URL, returns JSON |
+| POST | `/export/json` | Download JSON export |
+| POST | `/export/csv` | Download CSV export |
+
+## Project Structure
+```
+scraper/
+├── main.py           # FastAPI backend
+├── requirements.txt
+├── static/
+│   └── index.html    # Frontend UI
+└── README.md
+```
