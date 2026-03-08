@@ -1,5 +1,9 @@
 # SCRPR — Web Scraper
 
+A full-stack web scraping tool built with FastAPI and BeautifulSoup4, featuring a clean dark-themed browser UI. Point it at any URL to extract links, images, and structured table data from static HTML pages. Results are displayed in a tabbed interface and can be exported as JSON or CSV for further use.
+Built with: Python, FastAPI, BeautifulSoup4, HTML/CSS/JS
+Features: Link classification (internal/external), image preview grid, table extraction, JSON & CSV export, response time and size metrics.
+
 FastAPI + BeautifulSoup4 scraper with a clean browser UI.
 
 ## Setup
